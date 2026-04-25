@@ -1,6 +1,8 @@
 export type MediaItem = {
+  id: string;
   uri: string;
   type: "image" | "video";
+  size?: number;
 };
 
 let currentItem: MediaItem | null = null;

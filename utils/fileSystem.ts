@@ -82,33 +82,3 @@ export async function readStatuses(): Promise<StatusItem[]> {
     return [];
   }
 }
-
-export async function saveFile(uri: string) {
-  try {
-    const permissions =
-      await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-
-    if (!permissions.granted) return;
-
-    const fileName = uri.split("/").pop() || "file";
-
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    await FileSystem.StorageAccessFramework.createFileAsync(
-      permissions.directoryUri,
-      fileName,
-      "image/jpeg" // we'll improve this later
-    ).then(async (newUri) => {
-      await FileSystem.writeAsStringAsync(newUri, base64, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-    });
-
-    return true;
-  } catch (e) {
-    console.log("Save error", e);
-    return false;
-  }
-}
