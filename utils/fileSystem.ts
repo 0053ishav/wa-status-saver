@@ -112,22 +112,3 @@ export async function saveFile(uri: string) {
     return false;
   }
 }
-
-
-export async function getPlayableUri(uri: string) {
-  try {
-    const fileName = uri.split("/").pop() || "temp";
-
-    const dest = FileSystem.cacheDirectory + fileName;
-
-    await FileSystem.copyAsync({
-      from: uri,
-      to: dest,
-    });
-
-    return dest;
-  } catch (e) {
-    console.log("Convert error", e);
-    return uri; // fallback
-  }
-}

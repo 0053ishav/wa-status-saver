@@ -7,7 +7,8 @@ import {
   requestFolderPermission,
   StatusItem,
 } from "@/utils/fileSystem";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 
 export default function ImagesScreen() {
@@ -15,23 +16,26 @@ export default function ImagesScreen() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const init = async () => {
-      const saved = await loadSavedUri();
+  useFocusEffect(
+    useCallback(() => {
+      const init = async () => {
+        const saved = await loadSavedUri();
 
-      if (!saved) {
-        setShowModal(true);
+        if (!saved) {
+          setShowModal(true);
+          setLoading(false);
+          return;
+        }
+
+        const res = await readStatuses();
+        setData(res.filter((i) => i.type === "image"));
         setLoading(false);
-        return;
-      }
+      };
 
-      const res = await readStatuses();
-      setData(res.filter((i) => i.type === "image"));
-      setLoading(false);
-    };
-
-    init();
-  }, []);
+      init();
+    }, []),
+  );
+  console.log("image data: ", data);
 
   const handleGrant = async () => {
     const uri = await requestFolderPermission();

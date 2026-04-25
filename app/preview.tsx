@@ -1,40 +1,47 @@
-import { getPlayableUri } from "@/utils/fileSystem";
+import { getCurrentItem } from "@/stores/mediaStore";
 import { saveToGallery } from "@/utils/media";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { VideoView, useVideoPlayer } from "expo-video";
-import { useEffect, useState } from "react";
-import { Button, Image, Text, TouchableOpacity, View } from "react-native";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { Button, Text, TouchableOpacity, View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 export default function Preview() {
-  const params = useLocalSearchParams();
+  const item = getCurrentItem();
+  const insets = useSafeAreaInsets();
+  const uri = item?.uri ?? "";
+  const type = item?.type ?? "image";
 
-  const uri = decodeURIComponent(params.uri as string);
-  const type = params.type as "image" | "video";
-  console.log("decodeURIComponent ", uri, type);
-  console.log(getPlayableUri, "@");
-  const [localUri, setLocalUri] = useState<string | null>(null);
+  const player = useVideoPlayer(uri, (p) => {
+    if (!p) return;
 
-  useEffect(() => {
-    const load = async () => {
-      const converted = await getPlayableUri(uri);
-      setLocalUri(converted);
-    };
-
-    load();
-  }, [uri]);
-
-  const player = useVideoPlayer(localUri, (player) => {
-    player.loop = true;
+    if (type === "video") {
+      // p.loop = true;
+    } else {
+      p.pause();
+    }
   });
 
-  const insets = useSafeAreaInsets();
+  if (!item) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#000",
+        }}
+      >
+        <Text style={{ color: "#fff" }}>No media found</Text>
+      </View>
+    );
+  }
 
   const handleSave = async () => {
     const { status } = await MediaLibrary.getPermissionsAsync();
@@ -84,17 +91,16 @@ export default function Preview() {
       </View>
 
       {/* MEDIA */}
-      {type === "video" ? (
-        <VideoView
-          player={player}
+      {type === "image" ? (
+        <Image
+          key={uri}
+          source={{ uri }}
           style={{ flex: 1 }}
-          fullscreenOptions={{
-            enable: true,
-          }}
-          allowsPictureInPicture
+          contentFit="contain"
+          cachePolicy="none"
         />
       ) : (
-        <Image source={{ uri }} style={{ flex: 1 }} resizeMode="contain" />
+        <VideoView player={player} style={{ flex: 1 }} allowsFullscreen />
       )}
 
       {/* ACTIONS */}

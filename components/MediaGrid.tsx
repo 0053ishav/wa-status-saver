@@ -1,7 +1,8 @@
+import { MediaItem, setCurrentItem } from "@/stores/mediaStore";
 import { router } from "expo-router";
 import { FlatList, Image, Pressable } from "react-native";
 
-export default function MediaGrid({ data }: any) {
+export default function MediaGrid({ data }: { data: MediaItem[] }) {
   return (
     <FlatList
       data={data}
@@ -10,15 +11,10 @@ export default function MediaGrid({ data }: any) {
       renderItem={({ item }) => (
         <Pressable
           android_ripple={{ color: "#333" }}
-          onPress={() =>
-            router.push({
-              pathname: "/preview",
-              params: {
-                uri: encodeURIComponent(item.uri),
-                type: item.type,
-              },
-            })
-          }
+          onPress={() => {
+            setCurrentItem(item);
+            router.push("/preview");
+          }}
           style={{ margin: 1 }}
         >
           <Image
