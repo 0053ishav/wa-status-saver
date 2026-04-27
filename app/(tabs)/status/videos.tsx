@@ -1,12 +1,18 @@
 import EmptyState from "@/components/EmptyState";
+import SaveFeedbackModal from "@/components/SaveFeedbackModal";
 import StatusMediaGrid from "@/components/StatusMediaGrid";
 import UpgradeModal from "@/components/UpgradeModal";
-import { getCurrentItem, MediaItem } from "@/stores/mediaStore";
+import { MediaItem } from "@/stores/mediaStore";
+import { tryShowInterstitial } from "@/utils/ads";
+import { autoSaveStatuses } from "@/utils/autoSave";
 import { loadSavedUri, readStatuses } from "@/utils/fileSystem";
 import { saveToGallery } from "@/utils/media";
+import { sendStatusNotification } from "@/utils/notifications";
 import { ensureMediaPermission } from "@/utils/permission";
-import { isProUser, setProUser } from "@/utils/pro";
-import { getCached, setCached } from "@/utils/videoCache";
+import { isProUser } from "@/utils/pro";
+import { purchasePro } from "@/utils/purchase";
+import { getSettings } from "@/utils/settings";
+import { shouldShowPaywall, trackAction } from "@/utils/trigger";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
@@ -23,39 +29,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VideosScreen() {
   const { SafModule } = NativeModules;
-
   const [data, setData] = useState<MediaItem[]>([]);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
   const scaleAnim = useState(new Animated.Value(1))[0];
-  const item = getCurrentItem();
-  const uri = item?.uri ?? "";
 
-  const type = item?.type ?? "image";
-  const [videoUri, setVideoUri] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [saveState, setSaveState] = useState<
+    "loading" | "success" | "error" | null
+  >(null);
 
-  useEffect(() => {
-    if (type !== "video") return;
-
-    const load = async () => {
-      const cached = getCached(uri);
-
-      if (cached) {
-        setVideoUri(cached);
-        return;
-      }
-
-      const path = await SafModule.copyToCache(uri, type);
-      const fileUri = "file://" + path;
-
-      await setCached(uri, fileUri);
-      setVideoUri(fileUri);
-    };
-
-    load();
-  }, [uri, type]);
   useFocusEffect(
     useCallback(() => {
       const load = async () => {
@@ -65,7 +49,7 @@ export default function VideosScreen() {
         const res = await readStatuses();
 
         const mapped: MediaItem[] = res
-          .filter((i) => i.type === "video") // ✅ FIXED
+          .filter((i) => i.type === "video")
           .map((item) => ({
             id: item.uri,
             uri: item.uri,
@@ -73,9 +57,32 @@ export default function VideosScreen() {
           }));
 
         setData(mapped);
+
+        const s = await getSettings();
+
+        if (s.autoSave) {
+          const { savedCount, newCount, limitReached } =
+            await autoSaveStatuses();
+
+          if (savedCount > 0) {
+            ToastAndroid.show(
+              `Auto saved ${savedCount} items`,
+              ToastAndroid.SHORT,
+            );
+          }
+
+          if (s.notifications && newCount > 0) {
+            await sendStatusNotification(newCount);
+          }
+
+          if (limitReached && shouldShowPaywall()) {
+            setShowUpgrade(true);
+          }
+        }
       };
 
       load();
+      trackAction(1);
     }, []),
   );
 
@@ -91,6 +98,13 @@ export default function VideosScreen() {
     }
 
     setSelected(newSet);
+    if (newSet.size >= 2) {
+      trackAction(1);
+
+      if (shouldShowPaywall()) {
+        setShowUpgrade(true);
+      }
+    }
   };
 
   const handleLongPress = (id: string) => {
@@ -110,29 +124,48 @@ export default function VideosScreen() {
 
   const handleBulkSave = async () => {
     const pro = await isProUser();
+    if (selected.size === 0) return;
 
-    if (!pro && selected.size > 1) {
+    if (!pro && selected.size >= 2) {
       setShowUpgrade(true);
-
       return;
     }
 
     const hasPermission = await ensureMediaPermission();
     if (!hasPermission) return;
 
+    setSaveState("loading");
+
+    let successCount = 0;
+
     for (const id of selected) {
       const item = data.find((i) => i.id === id);
       if (item) {
         const res = await saveToGallery(item.uri, item.type);
-        ToastAndroid.show(
-          res ? "Saved to gallery" : "Failed",
-          ToastAndroid.SHORT,
-        );
+
+        if (res) successCount++;
+
+        await new Promise((r) => setTimeout(r, 200));
       }
     }
 
     setSelected(new Set());
     setSelectionMode(false);
+
+    if (successCount > 0) {
+      setSaveState("success");
+
+      tryShowInterstitial();
+
+      trackAction(2);
+
+      if (shouldShowPaywall()) {
+        setShowUpgrade(true);
+      }
+    } else {
+      setSaveState("error");
+    }
+    setTimeout(() => setSaveState(null), 1200);
   };
 
   const handleSelectAll = () => {
@@ -146,28 +179,32 @@ export default function VideosScreen() {
   };
 
   const handleShareSelected = async () => {
-    try {
-      let shareUri = uri;
+    if (selected.size === 0) return;
+    setSaveState("loading");
 
-      // 🔥 If video → use cached file
-      if (type === "video") {
-        if (videoUri) {
-          shareUri = videoUri;
-        } else {
-          const path = await SafModule.copyToCache(uri, type);
-          shareUri = "file://" + path;
-        }
-      } else {
-        // 🔥 IMAGE → convert SAF → file
-        const path = await SafModule.copyToCache(uri, type);
-        shareUri = "file://" + path;
+    try {
+      for (const id of selected) {
+        const item = data.find((i) => i.id === id);
+        if (!item) continue;
+
+        const path = await SafModule.copyToCache(item.uri, item.type);
+        const shareUri = "file://" + path;
+
+        await Sharing.shareAsync(shareUri);
       }
 
-      await Sharing.shareAsync(shareUri);
+      tryShowInterstitial();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      console.log("Share error", e);
-      ToastAndroid.show("Sharing failed", ToastAndroid.SHORT);
+      trackAction(2);
+
+      if (shouldShowPaywall()) {
+        setShowUpgrade(true);
+      }
+      setSaveState("success");
+      setTimeout(() => setSaveState(null), 1200);
+    } catch {
+      setSaveState("error");
+      setTimeout(() => setSaveState(null), 1200);
     }
   };
 
@@ -194,7 +231,11 @@ export default function VideosScreen() {
               transform: [{ scale: scaleAnim }],
             }}
           >
-            {selected.size} selected
+            {selected.size === data.length
+              ? "All selected"
+              : selected.size === 1
+                ? "1 selected"
+                : `${selected.size} / ${data.length} selected`}
           </Animated.Text>
 
           <View style={{ flexDirection: "row", gap: 20 }}>
@@ -242,9 +283,19 @@ export default function VideosScreen() {
         visible={showUpgrade}
         onClose={() => setShowUpgrade(false)}
         onUpgrade={async () => {
-          await setProUser(true); // temp unlock
-          setShowUpgrade(false);
+          const success = await purchasePro();
+
+          if (success) {
+            setShowUpgrade(false);
+            ToastAndroid.show("Pro unlocked 🚀", ToastAndroid.SHORT);
+          } else {
+            ToastAndroid.show("Purchase failed", ToastAndroid.SHORT);
+          }
         }}
+      />
+      <SaveFeedbackModal
+        visible={saveState !== null}
+        state={saveState ?? "loading"}
       />
     </SafeAreaView>
   );

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Dimensions, View } from "react-native";
 import {
   BannerAd,
   BannerAdSize,
@@ -9,10 +10,12 @@ import {
 export default function TabsLayout() {
   const adUnitId = __DEV__
     ? TestIds.BANNER
-    : "ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy";
+    : "ca-app-pub-9105764742528026/2325362733";
+
+  const { width } = Dimensions.get("window");
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -54,14 +57,24 @@ export default function TabsLayout() {
           }}
         />
       </Tabs>
-      {/* 🔥 BANNER (GLOBAL) */}
-      <BannerAd
-        unitId={adUnitId}
-        size={BannerAdSize.FULL_BANNER}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
+
+      <View
+        style={{
+          width: width,
+          alignItems: "center",
+          backgroundColor: "#000",
+          paddingVertical: 4,
         }}
-      />
-    </>
+      >
+        {/* 🔥 BANNER (GLOBAL) */}
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: true,
+          }}
+        />
+      </View>
+    </View>
   );
 }

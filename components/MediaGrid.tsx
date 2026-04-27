@@ -1,7 +1,6 @@
-import { MediaItem, setCurrentItem } from "@/stores/mediaStore";
-import { ensureMediaPermission } from "@/utils/permission";
+import { MediaItem, setMediaList } from "@/stores/mediaStore";
+import { deleteFromGallery } from "@/utils/media";
 import { Ionicons } from "@expo/vector-icons";
-import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
@@ -9,6 +8,7 @@ import {
   Image,
   Pressable,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -18,22 +18,17 @@ type Props = {
   onDelete: () => void;
 };
 
-function formatSize(bytes?: number) {
-  if (!bytes) return "";
-  const mb = bytes / (1024 * 1024);
-  return mb < 1 ? `${(bytes / 1024).toFixed(0)} KB` : `${mb.toFixed(1)} MB`;
-}
-
 export default function MediaGrid({ data, onDelete }: Props) {
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (uri: string) => {
     try {
-      const ok = await ensureMediaPermission();
-      if (!ok) return;
-      await MediaLibrary.deleteAssetsAsync([id]);
-      onDelete();
-    } catch (e) {
-      console.log("Delete error", e);
-    }
+      const res = await deleteFromGallery(uri);
+
+      if (res) {
+        onDelete();
+      } else {
+        ToastAndroid.show("Delete failed", ToastAndroid.SHORT);
+      }
+    } catch {}
   };
 
   return (
@@ -48,8 +43,13 @@ export default function MediaGrid({ data, onDelete }: Props) {
           <Pressable
             android_ripple={{ color: "#333" }}
             onPress={() => {
-              setCurrentItem(item);
-              router.push("/preview");
+              setMediaList(data);
+              router.push({
+                pathname: "/preview",
+                params: {
+                  index: data.findIndex((i) => i.id === item.id),
+                },
+              });
             }}
             style={{ margin: 1 }}
           >
@@ -72,10 +72,11 @@ export default function MediaGrid({ data, onDelete }: Props) {
               backgroundColor: "rgba(0,0,0,0.5)",
             }}
           >
-            {/* SIZE */}
-            <Text style={{ color: "#ccc", fontSize: 10 }}>
-              {formatSize(item.size)}
-            </Text>
+            {item.type === "video" && (
+              <Text style={{ color: "#ccc", fontSize: 10 }}>
+                {Math.floor(item.duration || 0)}
+              </Text>
+            )}
 
             {/* ACTIONS */}
             <View style={{ flexDirection: "row", gap: 8 }}>
@@ -85,7 +86,7 @@ export default function MediaGrid({ data, onDelete }: Props) {
               </TouchableOpacity>
 
               {/* DELETE */}
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <TouchableOpacity onPress={() => handleDelete(item.uri)}>
                 <Ionicons name="trash" size={14} color="#ff4d4d" />
               </TouchableOpacity>
             </View>

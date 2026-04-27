@@ -1,11 +1,12 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const KEY = "IS_PRO_USER";
+import Purchases from "react-native-purchases";
 
 export async function isProUser() {
-  return (await AsyncStorage.getItem(KEY)) === "true";
-}
+  try {
+    const info = await Purchases.getCustomerInfo();
 
-export async function setProUser(value: boolean) {
-  await AsyncStorage.setItem(KEY, value ? "true" : "false");
+    return !!info.entitlements.active["pro"];
+  } catch (e) {
+    console.log("Pro check error", e);
+    return false;
+  }
 }

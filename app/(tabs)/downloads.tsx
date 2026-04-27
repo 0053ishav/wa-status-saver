@@ -1,6 +1,9 @@
 import MediaGrid from "@/components/MediaGrid";
+import UpgradeModal from "@/components/UpgradeModal";
 import { MediaItem } from "@/stores/mediaStore";
 import { ensureMediaPermission } from "@/utils/permission";
+import { purchasePro } from "@/utils/purchase";
+import { shouldShowPaywall, trackAction } from "@/utils/trigger";
 import * as MediaLibrary from "expo-media-library";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
@@ -9,16 +12,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function DownloadsScreen() {
   const [data, setData] = useState<MediaItem[]>([]);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const loadMedia = async () => {
-    const albums = await MediaLibrary.getAlbumsAsync();
-    const album = albums.find((a) => a.title === "StatusSaver");
+    const album = await MediaLibrary.getAlbumAsync("StatusSaver");
 
-    if (!album) return;
+    if (!album) {
+      setData([]);
+      return;
+    }
 
     const media = await MediaLibrary.getAssetsAsync({
-      album: album.id,
+      album: album,
       mediaType: ["photo", "video"],
+      sortBy: [[MediaLibrary.SortBy.creationTime, false]],
       first: 100,
     });
 
@@ -26,7 +33,7 @@ export default function DownloadsScreen() {
       id: item.id,
       uri: item.uri,
       type: item.mediaType === "video" ? "video" : "image",
-      size: item.duration || 0,
+      duration: item.duration,
     })) as MediaItem[];
 
     setData(formatted);
@@ -43,6 +50,11 @@ export default function DownloadsScreen() {
 
       setHasPermission(true);
       await loadMedia();
+      trackAction(1);
+
+      if (shouldShowPaywall()) {
+        setShowUpgrade(true);
+      }
     };
 
     init();
@@ -80,8 +92,30 @@ export default function DownloadsScreen() {
           <Text style={{ color: "#666" }}>No downloads yet</Text>
         </View>
       ) : (
-        <MediaGrid data={data} onDelete={loadMedia} />
+        <MediaGrid
+          data={data}
+          onDelete={() => {
+            loadMedia();
+
+            trackAction(1);
+
+            if (shouldShowPaywall()) {
+              setShowUpgrade(true);
+            }
+          }}
+        />
       )}
+      <UpgradeModal
+        visible={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        onUpgrade={async () => {
+          const success = await purchasePro();
+
+          if (success) {
+            setShowUpgrade(false);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }

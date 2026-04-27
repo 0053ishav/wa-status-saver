@@ -1,4 +1,4 @@
-import { MediaItem, setCurrentItem } from "@/stores/mediaStore";
+import { MediaItem, setMediaList } from "@/stores/mediaStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -37,8 +37,14 @@ export default function StatusMediaGrid({
                 if (selectionMode) {
                   onToggle(item.id);
                 } else {
-                  setCurrentItem(item);
-                  router.push("/preview");
+                  // setCurrentItem(item);
+                  setMediaList(data);
+                  router.push({
+                    pathname: "/preview",
+                    params: {
+                      index: data.findIndex((i) => i.id === item.id),
+                    },
+                  });
                 }
               }}
               onLongPress={() => onLongPress(item.id)}

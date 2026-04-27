@@ -1,14 +1,21 @@
-import { getCurrentItem } from "@/stores/mediaStore";
+import SaveFeedbackModal from "@/components/SaveFeedbackModal";
+import UpgradeModal from "@/components/UpgradeModal";
+import { getMediaList } from "@/stores/mediaStore";
+import { tryShowInterstitial } from "@/utils/ads";
 import { saveToGallery } from "@/utils/media";
 import { ensureMediaPermission } from "@/utils/permission";
+import { purchasePro } from "@/utils/purchase";
+import { resetTrigger, shouldShowPaywall, trackAction } from "@/utils/trigger";
 import { getCached, setCached } from "@/utils/videoCache";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
+  FlatList,
   NativeModules,
   Pressable,
   Text,
@@ -23,45 +30,32 @@ import {
 
 export default function Preview() {
   const { SafModule } = NativeModules;
-  const item = getCurrentItem();
   const insets = useSafeAreaInsets();
-  const uri = item?.uri ?? "";
-  const type = item?.type ?? "image";
-  const [videoUri, setVideoUri] = useState<string | null>(null);
+  const { width } = Dimensions.get("window");
+  const params = useLocalSearchParams();
+
+  const flatListRef = useRef<FlatList>(null);
+  const data = getMediaList();
+  const initialIndex = Array.isArray(params.index)
+    ? Number(params.index[0])
+    : Number(params.index) || 0;
+
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  const currentItem = data[currentIndex] ?? data[0];
+  const swipeCountRef = useRef(0);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [saveState, setSaveState] = useState<
+    "loading" | "success" | "error" | null
+  >(null);
 
   useEffect(() => {
-    if (type !== "video") return;
-
-    const load = async () => {
-      const cached = getCached(uri);
-
-      if (cached) {
-        setVideoUri(cached);
-        return;
-      }
-
-      const path = await SafModule.copyToCache(uri, type);
-      const fileUri = "file://" + path;
-
-      await setCached(uri, fileUri);
-      setVideoUri(fileUri);
+    return () => {
+      tryShowInterstitial();
     };
+  }, []);
 
-    load();
-  }, [uri, type]);
-
-  const player = useVideoPlayer(videoUri ?? "", (p) => {
-    if (!p) return;
-
-    if (type === "video") {
-      p.loop = true;
-      p.play();
-    } else {
-      p.pause();
-    }
-  });
-
-  if (!item) {
+  if (!data || data.length === 0) {
     return (
       <View
         style={{
@@ -77,34 +71,73 @@ export default function Preview() {
   }
 
   const handleSave = async () => {
+    if (!currentItem) return;
+
     const hasPermission = await ensureMediaPermission();
     if (!hasPermission) {
-      console.log("Permission denied");
       return false;
     }
-    const res = await saveToGallery(uri, type);
-    ToastAndroid.show(res ? "Saved to gallery" : "Failed", ToastAndroid.SHORT);
+    try {
+      setSaveState("loading");
+
+      const res = await saveToGallery(currentItem.uri, currentItem.type);
+
+      if (res) {
+        setSaveState("success");
+
+        setTimeout(() => setSaveState(null), 1200);
+
+        tryShowInterstitial();
+
+        trackAction(2);
+
+        if (shouldShowPaywall()) {
+          setShowUpgrade(true);
+        }
+      } else {
+        setSaveState("error");
+        setTimeout(() => setSaveState(null), 1200);
+      }
+    } catch (e) {
+      setSaveState("error");
+      setTimeout(() => setSaveState(null), 1200);
+    }
   };
 
   const handleShare = async () => {
     try {
-      let shareUri = uri;
+      let shareUri = currentItem.uri;
 
       // 🔥 If video → use cached file
-      if (type === "video") {
-        if (videoUri) {
-          shareUri = videoUri;
+      if (currentItem.type === "video") {
+        const cached = getCached(currentItem.uri);
+
+        if (cached) {
+          shareUri = cached;
         } else {
-          const path = await SafModule.copyToCache(uri, type);
+          const path = await SafModule.copyToCache(
+            currentItem.uri,
+            currentItem.type,
+          );
           shareUri = "file://" + path;
         }
       } else {
         // 🔥 IMAGE → convert SAF → file
-        const path = await SafModule.copyToCache(uri, type);
+        const path = await SafModule.copyToCache(
+          currentItem.uri,
+          currentItem.type,
+        );
         shareUri = "file://" + path;
       }
 
       await Sharing.shareAsync(shareUri);
+      tryShowInterstitial();
+      trackAction();
+
+      if (shouldShowPaywall()) {
+        setShowUpgrade(true);
+        resetTrigger();
+      }
     } catch (e) {
       console.log("Share error", e);
       ToastAndroid.show("Sharing failed", ToastAndroid.SHORT);
@@ -113,7 +146,6 @@ export default function Preview() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-      {/* HEADER */}
       {/* 🔝 HEADER */}
       <View
         style={{
@@ -137,8 +169,9 @@ export default function Preview() {
         {/* Spacer for balance */}
         <View style={{ width: 22 }} />
       </View>
+
       {/* MEDIA */}
-      {type === "image" ? (
+      {/* {type === "image" ? (
         <Image
           key={uri}
           source={{ uri }}
@@ -158,7 +191,53 @@ export default function Preview() {
         >
           <Text style={{ color: "#aaa" }}>Loading video...</Text>
         </View>
-      )}
+      )} */}
+
+      <FlatList
+        ref={flatListRef}
+        data={data}
+        horizontal
+        pagingEnabled
+        onScrollToIndexFailed={() => {
+          setTimeout(() => {
+            flatListRef.current?.scrollToIndex({
+              index: initialIndex,
+              animated: false,
+            });
+          }, 300);
+        }}
+        keyExtractor={(item) => item.id}
+        showsHorizontalScrollIndicator={false}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+        onMomentumScrollEnd={(e) => {
+          const newIndex = Math.round(e.nativeEvent.contentOffset.x / width);
+          setCurrentIndex(newIndex);
+
+          swipeCountRef.current++;
+
+          if (swipeCountRef.current >= 3 && newIndex > 1) {
+            swipeCountRef.current = 0;
+
+            tryShowInterstitial();
+          }
+
+          trackAction();
+
+          if (shouldShowPaywall()) {
+            setShowUpgrade(true);
+            resetTrigger();
+          }
+        }}
+        renderItem={({ item, index }) => (
+          <View style={{ width, height: "100%" }}>
+            <MediaItemView item={item} isActive={index === currentIndex} />
+          </View>
+        )}
+      />
 
       {/* ACTIONS */}
       <View
@@ -202,6 +281,86 @@ export default function Preview() {
           <Ionicons name="download" size={26} color="#000" />
         </TouchableOpacity>
       </View>
+      <UpgradeModal
+        visible={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        onUpgrade={async () => {
+          const success = await purchasePro();
+
+          if (success) {
+            setShowUpgrade(false);
+            ToastAndroid.show("Pro unlocked 🚀", ToastAndroid.SHORT);
+          }
+        }}
+      />
+      <SaveFeedbackModal
+        visible={saveState !== null}
+        state={saveState ?? "loading"}
+      />
     </SafeAreaView>
+  );
+}
+
+function MediaItemView({ item, isActive }: any) {
+  const { SafModule } = NativeModules;
+  const [videoUri, setVideoUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (item.type !== "video") return;
+
+    const load = async () => {
+      const cached = getCached(item.uri);
+
+      if (cached) {
+        setVideoUri(cached);
+        return;
+      }
+
+      const path = await SafModule.copyToCache(item.uri, item.type);
+      const fileUri = "file://" + path;
+
+      await setCached(item.uri, fileUri);
+      setVideoUri(fileUri);
+    };
+
+    load();
+  }, [item.uri]);
+
+  const player = useVideoPlayer(videoUri ?? "");
+
+  useEffect(() => {
+    if (!player || item.type !== "video" || !videoUri) return;
+
+    try {
+      if (isActive) {
+        player.loop = true;
+        player.play();
+      } else {
+        player.pause();
+      }
+    } catch (e) {
+      // 🔥 prevent crash
+      console.log("Player error (safe ignore)", e);
+    }
+  }, [isActive, videoUri]);
+
+  if (item.type === "image") {
+    return (
+      <Image
+        source={{ uri: item.uri }}
+        style={{ flex: 1 }}
+        contentFit="contain"
+      />
+    );
+  }
+
+  if (videoUri) {
+    return <VideoView player={player} style={{ flex: 1 }} />;
+  }
+
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ color: "#aaa" }}>Loading video...</Text>
+    </View>
   );
 }
