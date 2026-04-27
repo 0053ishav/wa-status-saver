@@ -1,26 +1,31 @@
 {
   "expo": {
-    "name": "wa-status-saver",
+    "name": "WA Status Saver - Download Status",
     "slug": "wa-status-saver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "wastatussaver",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.x0007ishav.wastatussaver",
+      "versionCode": 1,
+      "permissions": [
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.x0007ishav.wastatussaver"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -40,13 +45,7 @@
           }
         }
       ],
-      "expo-video",
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-9105764742528026~7199994475"
-        }
-      ]
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
