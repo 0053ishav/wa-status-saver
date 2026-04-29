@@ -2,20 +2,25 @@ import MediaGrid from "@/components/MediaGrid";
 import UpgradeModal from "@/components/UpgradeModal";
 import { MediaItem } from "@/stores/mediaStore";
 import { ensureMediaPermission } from "@/utils/permission";
+import { isProUser } from "@/utils/pro";
 import { purchasePro } from "@/utils/purchase";
+import { getDeletedItems } from "@/utils/recycleBin";
 import { shouldShowPaywall, trackAction } from "@/utils/trigger";
+import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
-import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DownloadsScreen() {
   const [data, setData] = useState<MediaItem[]>([]);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [isPro, setIsPro] = useState(false);
 
   const loadMedia = async () => {
-    const album = await MediaLibrary.getAlbumAsync("StatusSaver");
+    const album = await MediaLibrary.getAlbumAsync("WA Status Saver");
 
     if (!album) {
       setData([]);
@@ -29,36 +34,45 @@ export default function DownloadsScreen() {
       first: 100,
     });
 
-    const formatted = media.assets.map((item) => ({
-      id: item.id,
-      uri: item.uri,
-      type: item.mediaType === "video" ? "video" : "image",
-      duration: item.duration,
-    })) as MediaItem[];
+    const deleted = await getDeletedItems();
+    const deletedIds = new Set(deleted.map((d) => d.id));
+
+    const formatted = media.assets
+      .filter((item) => !deletedIds.has(item.id))
+      .map((item) => ({
+        id: item.id,
+        uri: item.uri,
+        type: item.mediaType === "video" ? "video" : "image",
+      })) as MediaItem[];
 
     setData(formatted);
   };
 
-  useEffect(() => {
-    const init = async () => {
-      const ok = await ensureMediaPermission();
+  useFocusEffect(
+    useCallback(() => {
+      const init = async () => {
+        const pro = await isProUser();
+        setIsPro(pro);
 
-      if (!ok) {
-        setHasPermission(false);
-        return;
-      }
+        const ok = await ensureMediaPermission();
 
-      setHasPermission(true);
-      await loadMedia();
-      trackAction(1);
+        if (!ok) {
+          setHasPermission(false);
+          return;
+        }
 
-      if (shouldShowPaywall()) {
-        setShowUpgrade(true);
-      }
-    };
+        setHasPermission(true);
+        await loadMedia();
+        trackAction(1);
 
-    init();
-  }, []);
+        if (shouldShowPaywall()) {
+          setShowUpgrade(true);
+        }
+      };
+
+      init();
+    }, []),
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
@@ -68,12 +82,29 @@ export default function DownloadsScreen() {
           padding: 12,
           borderBottomWidth: 1,
           borderColor: "#111",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <Text style={{ color: "#888", fontSize: 12 }}>Saving to:</Text>
-        <Text style={{ color: "#25D366", fontSize: 13 }}>
-          Pictures/StatusSaver
-        </Text>
+        <View>
+          <Text style={{ color: "#888", fontSize: 12 }}>Saving to:</Text>
+          <Text style={{ color: "#25D366", fontSize: 13 }}>
+            WA Status Saver Album
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            router.push("/recycle-bin");
+          }}
+          style={{
+            padding: 8,
+            backgroundColor: "#111",
+            borderRadius: 8,
+          }}
+        >
+          <Ionicons name="trash-outline" size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       {/* Permission denied */}

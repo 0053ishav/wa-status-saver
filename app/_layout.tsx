@@ -1,6 +1,7 @@
 import { loadInterstitial } from "@/utils/ads";
 import { initNotifications } from "@/utils/notifications";
 import { ensureMediaPermission } from "@/utils/permission";
+import { clearExpired } from "@/utils/recycleBin";
 import { initRevenueCat } from "@/utils/revenuecat";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
@@ -21,6 +22,7 @@ export default function RootLayout() {
 
     initRevenueCat();
     initNotifications();
+    clearExpired(7);
   }, []);
 
   return <Stack screenOptions={{ headerShown: false }} />;

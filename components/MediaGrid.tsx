@@ -7,7 +7,6 @@ import {
   FlatList,
   Image,
   Pressable,
-  Text,
   ToastAndroid,
   TouchableOpacity,
   View,
@@ -19,14 +18,14 @@ type Props = {
 };
 
 export default function MediaGrid({ data, onDelete }: Props) {
-  const handleDelete = async (uri: string) => {
+  const handleDelete = async (item: MediaItem) => {
     try {
-      const res = await deleteFromGallery(uri);
+      const res = await deleteFromGallery(item);
 
       if (res) {
         onDelete();
       } else {
-        ToastAndroid.show("Delete failed", ToastAndroid.SHORT);
+        ToastAndroid.show("Moved to Recycle Bin (7 days)", ToastAndroid.SHORT);
       }
     } catch {}
   };
@@ -72,21 +71,22 @@ export default function MediaGrid({ data, onDelete }: Props) {
               backgroundColor: "rgba(0,0,0,0.5)",
             }}
           >
-            {item.type === "video" && (
-              <Text style={{ color: "#ccc", fontSize: 10 }}>
-                {Math.floor(item.duration || 0)}
-              </Text>
-            )}
-
             {/* ACTIONS */}
-            <View style={{ flexDirection: "row", gap: 8 }}>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
               {/* SHARE */}
               <TouchableOpacity onPress={() => Sharing.shareAsync(item.uri)}>
                 <Ionicons name="share-social" size={14} color="#fff" />
               </TouchableOpacity>
 
               {/* DELETE */}
-              <TouchableOpacity onPress={() => handleDelete(item.uri)}>
+              <TouchableOpacity onPress={() => handleDelete(item)}>
                 <Ionicons name="trash" size={14} color="#ff4d4d" />
               </TouchableOpacity>
             </View>

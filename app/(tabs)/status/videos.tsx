@@ -7,6 +7,7 @@ import { tryShowInterstitial } from "@/utils/ads";
 import { autoSaveStatuses } from "@/utils/autoSave";
 import { loadSavedUri, readStatuses } from "@/utils/fileSystem";
 import { saveToGallery } from "@/utils/media";
+// import { saveToGallery } from "@/utils/media";
 import { sendStatusNotification } from "@/utils/notifications";
 import { ensureMediaPermission } from "@/utils/permission";
 import { isProUser } from "@/utils/pro";
@@ -16,19 +17,12 @@ import { shouldShowPaywall, trackAction } from "@/utils/trigger";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
-import * as Sharing from "expo-sharing";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Animated,
-  NativeModules,
-  ToastAndroid,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Animated, ToastAndroid, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VideosScreen() {
-  const { SafModule } = NativeModules;
+  // const { SafModule } = NativeModules;
   const [data, setData] = useState<MediaItem[]>([]);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -187,10 +181,10 @@ export default function VideosScreen() {
         const item = data.find((i) => i.id === id);
         if (!item) continue;
 
-        const path = await SafModule.copyToCache(item.uri, item.type);
-        const shareUri = "file://" + path;
+        // const path = await SafModule.copyToCache(item.uri, item.type);
+        // const shareUri = "file://" + path;
 
-        await Sharing.shareAsync(shareUri);
+        // await Sharing.shareAsync(shareUri);
       }
 
       tryShowInterstitial();

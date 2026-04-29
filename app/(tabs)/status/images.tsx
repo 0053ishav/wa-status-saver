@@ -23,17 +23,11 @@ import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Animated,
-  NativeModules,
-  ToastAndroid,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Animated, ToastAndroid, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ImagesScreen() {
-  const { SafModule } = NativeModules;
+  // const { SafModule } = NativeModules;
 
   const [data, setData] = useState<MediaItem[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -51,6 +45,7 @@ export default function ImagesScreen() {
     useCallback(() => {
       const init = async () => {
         const saved = await loadSavedUri();
+        console.log(saved, "saved");
 
         if (!saved) {
           setShowModal(true);
@@ -225,8 +220,8 @@ export default function ImagesScreen() {
 
         let shareUri = item.uri;
 
-        const path = await SafModule.copyToCache(item.uri, item.type);
-        shareUri = "file://" + path;
+        // const path = await SafModule.copyToCache(item.uri, item.type);
+        // shareUri = "file://" + path;
 
         await Sharing.shareAsync(shareUri);
       }

@@ -15,16 +15,30 @@ import {
   Switch,
   Text,
   ToastAndroid,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(false);
   const [autoSave, setAutoSaveState] = useState(false);
   const APP_LINK = "https://play.google.com/store/apps/details?id=your.app.id";
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [isPro, setIsPro] = useState(false);
+
+  const tips = [
+    "Tip: Long press to select multiple items",
+    "Tip: Auto-save saves time daily",
+    "Tip: Share directly without downloading",
+  ];
+
+  const [tipIndex, setTipIndex] = useState(0);
+
+  useEffect(() => {
+    const i = Math.floor(Math.random() * tips.length);
+    setTipIndex(i);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -85,25 +99,54 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         {/* 🔓 REMOVE ADS CARD */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Go Pro 🚀</Text>
-          {/* <Text style={styles.cardDesc}>
-            🚫 No Ads ⚡ Unlimited downloads 🚀 Faster performance 🔒 Future
-            premium features
-          </Text>
-          <Text style={styles.cardDesc}>
-            ⚡ Unlimited downloads 🚀 Faster performance 🔒 Future premium
-            features
-          </Text>
-          <Text style={styles.cardDesc}>
-            🚀 Faster performance 🔒 Future premium features
-          </Text>
-          <Text style={styles.cardDesc}>🔒 Future premium features</Text> */}
-          <View style={styles.features}>
-            <Text style={styles.feature}>🚫 No Ads – clean experience</Text>
-            <Text style={styles.feature}>⚡ Unlimited downloads</Text>
-            <Text style={styles.feature}>🔔 Instant status alerts</Text>
-            <Text style={styles.feature}>🤖 Auto save statuses</Text>
+          <Text style={styles.cardTitle}>Quick Actions ⚡</Text>
+
+          <Text style={styles.cardDesc}>Speed up your workflow</Text>
+
+          {/* 🔥 ACTION BUTTONS */}
+          <View style={{ flexDirection: "row", marginTop: 16, gap: 10 }}>
+            {/* OPEN DOWNLOADS */}
+            <Pressable
+              style={styles.quickBtn}
+              onPress={() => router.push("/downloads")}
+            >
+              <Ionicons name="download-outline" size={18} color="#fff" />
+              <Text style={styles.quickText}>Downloads</Text>
+            </Pressable>
+
+            {/* RECYCLE BIN */}
+            <Pressable
+              style={styles.quickBtn}
+              onPress={() => router.push("/recycle-bin")}
+            >
+              <Ionicons name="trash-outline" size={18} color="#fff" />
+              <Text style={styles.quickText}>Recycle</Text>
+            </Pressable>
           </View>
+
+          {/* 🔥 PRO HOOK (dynamic, not fake) */}
+          {!isPro && (
+            <Pressable
+              onPress={() => setShowUpgrade(true)}
+              style={{
+                marginVertical: 18,
+                padding: 12,
+                borderRadius: 10,
+                backgroundColor: "#111",
+                borderWidth: 1,
+                borderColor: "#22c55e",
+              }}
+            >
+              <Text style={{ color: "#22c55e", fontSize: 13 }}>
+                🔒 Unlock Auto Save & Alerts
+              </Text>
+              <Text style={{ color: "#666", fontSize: 11, marginTop: 4 }}>
+                Save time automatically
+              </Text>
+            </Pressable>
+          )}
+
+          {/* CTA */}
           <Pressable
             style={[styles.proButton, isPro && { backgroundColor: "#444" }]}
             disabled={isPro}
@@ -112,37 +155,88 @@ export default function SettingsScreen() {
             }}
           >
             <Text style={styles.proButtonText}>
-              {isPro ? "Pro Activated ✅" : "Unlock Pro"}
+              {isPro ? "Pro Activated ✅" : "Upgrade to Pro"}
             </Text>
           </Pressable>
+          <Text style={{ color: "#666", marginTop: 12, fontSize: 12 }}>
+            💡 {tips[tipIndex]}
+          </Text>
         </View>
 
         {/* 🔔 NOTIFICATIONS */}
         <Text style={styles.section}>Notifications</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>New Status Alerts</Text>
+        <Pressable
+          style={styles.row}
+          onPress={() => {
+            if (!isPro) {
+              setShowUpgrade(true);
+              return;
+            }
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.label}>New Status Alerts</Text>
+            {!isPro && <ProBadge />}
+          </View>
           <Switch
             value={notifications}
+            disabled={!isPro}
             onValueChange={(v) => {
               setNotifications(v);
               setNotification(v);
             }}
           />
-        </View>
+        </Pressable>
 
         {/* ⚙️ FEATURES */}
         <Text style={styles.section}>Features</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Auto Save Status</Text>
+        <Pressable
+          style={styles.row}
+          onPress={() => {
+            if (!isPro) {
+              setShowUpgrade(true);
+              return;
+            }
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.label}>Auto Save Status</Text>
+            {!isPro && <ProBadge />}
+          </View>
+
           <Switch
             value={autoSave}
+            disabled={!isPro}
+            thumbColor={!isPro ? "#555" : undefined}
+            trackColor={{
+              false: "#333",
+              true: isPro ? "#25D366" : "#333", // 🔥 key
+            }}
             onValueChange={(v) => {
               setAutoSaveState(v);
               setAutoSave(v);
             }}
           />
-        </View>
+        </Pressable>
+        <View style={styles.row}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.label}>Recycle Bin</Text>
+            {!isPro && <ProBadge />}
+          </View>
 
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/recycle-bin");
+            }}
+            style={{
+              padding: 8,
+              backgroundColor: "#111",
+              borderRadius: 8,
+            }}
+          >
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
         {/* 📈 GROWTH */}
         <Text style={styles.section}>Support Us</Text>
 
@@ -214,6 +308,20 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
+
+const ProBadge = () => (
+  <View
+    style={{
+      backgroundColor: "#22c55e",
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
+      marginLeft: 8,
+    }}
+  >
+    <Text style={{ fontSize: 10, color: "#000", fontWeight: "bold" }}>PRO</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   safe: {
@@ -292,6 +400,21 @@ const styles = StyleSheet.create({
     color: "#ccc",
     marginTop: 4,
     marginBottom: 12,
+  },
+
+  quickBtn: {
+    flex: 1,
+    backgroundColor: "#1a1a1a",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  quickText: {
+    color: "#fff",
+    fontSize: 12,
+    marginTop: 6,
   },
 
   features: {

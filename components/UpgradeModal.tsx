@@ -17,27 +17,34 @@ export default function UpgradeModal({
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.container}>
+          {/* 🔥 BADGE */}
+          <Text style={styles.badge}>🔥 LIMITED OFFER</Text>
+
           {/* 🔥 TITLE */}
-          <Text style={styles.title}>Go Pro 🚀</Text>
+          <Text style={styles.title}>Unlock Pro</Text>
 
           {/* 💰 PRICE */}
-          <Text style={styles.price}>₹99 • Lifetime Access</Text>
+          <Text style={styles.price}>₹99 • Lifetime</Text>
 
-          {/* ⚡ URGENCY */}
-          <Text style={styles.sub}>Limited time offer</Text>
+          {/* ⚡ VALUE */}
+          <Text style={styles.sub}>One-time payment. No subscriptions.</Text>
 
           {/* ⭐ FEATURES */}
           <View style={styles.features}>
-            <Text style={styles.feature}>🚫 No Ads – clean experience</Text>
-            <Text style={styles.feature}>⚡ Unlimited downloads</Text>
-            <Text style={styles.feature}>🔔 Instant status alerts</Text>
-            <Text style={styles.feature}>🤖 Auto save statuses</Text>
+            <Feature text="🚫 No Ads – clean experience" />
+            <Feature text="⚡ Unlimited downloads" />
+            <Feature text="🔔 Instant status alerts" />
+            <Feature text="🤖 Auto save statuses" />
+            <Feature text="🗑️ Recycle Bin (restore deleted)" />
           </View>
 
           {/* 🔥 CTA */}
           <Pressable style={styles.button} onPress={onUpgrade}>
-            <Text style={styles.buttonText}>Unlock Pro Now</Text>
+            <Text style={styles.buttonText}>Unlock All Features</Text>
           </Pressable>
+
+          {/* 🔒 TRUST */}
+          <Text style={styles.trust}>🔒 Safe & secure payment</Text>
 
           {/* 🔄 RESTORE */}
           {onRestore && (
@@ -48,12 +55,16 @@ export default function UpgradeModal({
 
           {/* ❌ CLOSE */}
           <Pressable onPress={onClose}>
-            <Text style={styles.cancel}>Maybe later</Text>
+            <Text style={styles.cancel}>Not now</Text>
           </Pressable>
         </View>
       </View>
     </Modal>
   );
+}
+
+function Feature({ text }: { text: string }) {
+  return <Text style={styles.feature}>{text}</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -128,5 +139,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 12,
     fontSize: 13,
+  },
+
+  badge: {
+    alignSelf: "center",
+    backgroundColor: "#22c55e",
+    color: "#000",
+    fontSize: 10,
+    fontWeight: "bold",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 10,
+  },
+
+  trust: {
+    color: "#666",
+    textAlign: "center",
+    fontSize: 11,
+    marginTop: 10,
   },
 });

@@ -4,10 +4,12 @@ import { getMediaList } from "@/stores/mediaStore";
 import { tryShowInterstitial } from "@/utils/ads";
 import { saveToGallery } from "@/utils/media";
 import { ensureMediaPermission } from "@/utils/permission";
+// import { saveToGallery } from "@/utils/media";
 import { purchasePro } from "@/utils/purchase";
 import { resetTrigger, shouldShowPaywall, trackAction } from "@/utils/trigger";
 import { getCached, setCached } from "@/utils/videoCache";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -16,7 +18,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
-  NativeModules,
   Pressable,
   Text,
   ToastAndroid,
@@ -29,7 +30,7 @@ import {
 } from "react-native-safe-area-context";
 
 export default function Preview() {
-  const { SafModule } = NativeModules;
+  // const { SafModule } = NativeModules;
   const insets = useSafeAreaInsets();
   const { width } = Dimensions.get("window");
   const params = useLocalSearchParams();
@@ -98,7 +99,7 @@ export default function Preview() {
         setSaveState("error");
         setTimeout(() => setSaveState(null), 1200);
       }
-    } catch (e) {
+    } catch {
       setSaveState("error");
       setTimeout(() => setSaveState(null), 1200);
     }
@@ -115,19 +116,19 @@ export default function Preview() {
         if (cached) {
           shareUri = cached;
         } else {
-          const path = await SafModule.copyToCache(
-            currentItem.uri,
-            currentItem.type,
-          );
-          shareUri = "file://" + path;
+          // const path = await SafModule.copyToCache(
+          //   currentItem.uri,
+          //   currentItem.type,
+          // );
+          // shareUri = "file://" + path;
         }
       } else {
         // 🔥 IMAGE → convert SAF → file
-        const path = await SafModule.copyToCache(
-          currentItem.uri,
-          currentItem.type,
-        );
-        shareUri = "file://" + path;
+        // const path = await SafModule.copyToCache(
+        //   currentItem.uri,
+        //   currentItem.type,
+        // );
+        // shareUri = "file://" + path;
       }
 
       await Sharing.shareAsync(shareUri);
@@ -302,25 +303,35 @@ export default function Preview() {
 }
 
 function MediaItemView({ item, isActive }: any) {
-  const { SafModule } = NativeModules;
+  // const { SafModule } = NativeModules;
   const [videoUri, setVideoUri] = useState<string | null>(null);
 
   useEffect(() => {
     if (item.type !== "video") return;
 
     const load = async () => {
-      const cached = getCached(item.uri);
+      try {
+        const cached = getCached(item.uri);
 
-      if (cached) {
-        setVideoUri(cached);
-        return;
+        if (cached) {
+          setVideoUri(cached);
+          return;
+        }
+
+        // 🔥 convert content:// → file://
+        const fileName = item.uri.split("/").pop() || `vid_${Date.now()}.mp4`;
+        const dest = FileSystem.cacheDirectory + fileName;
+
+        await FileSystem.copyAsync({
+          from: item.uri,
+          to: dest,
+        });
+
+        setVideoUri(dest);
+        await setCached(item.uri, dest);
+      } catch (e) {
+        console.log("Video load error", e);
       }
-
-      const path = await SafModule.copyToCache(item.uri, item.type);
-      const fileUri = "file://" + path;
-
-      await setCached(item.uri, fileUri);
-      setVideoUri(fileUri);
     };
 
     load();
@@ -360,7 +371,8 @@ function MediaItemView({ item, isActive }: any) {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ color: "#aaa" }}>Loading video...</Text>
+      <Ionicons name="play-circle-outline" size={40} color="#555" />
+      <Text style={{ color: "#666", marginTop: 8 }}>Preparing video...</Text>
     </View>
   );
 }
