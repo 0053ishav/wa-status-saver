@@ -1,3 +1,4 @@
+import { THEME } from "@/config/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { View } from "react-native";
@@ -24,10 +25,10 @@ export default function StatusLayout() {
             textTransform: "none",
           },
           tabBarIndicatorStyle: {
-            backgroundColor: "#25D366",
+            backgroundColor: THEME.COLORS.PRIMARY,
             height: 3,
           },
-          tabBarActiveTintColor: "#25D366",
+          tabBarActiveTintColor: THEME.COLORS.PRIMARY,
           tabBarInactiveTintColor: "#888",
           tabBarShowIcon: true,
           tabBarItemStyle: {

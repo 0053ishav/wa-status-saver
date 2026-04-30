@@ -1,3 +1,4 @@
+import { THEME } from "@/config/theme";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -76,20 +77,20 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    backgroundColor: "#111",
+    backgroundColor: THEME.COLORS.BORDER,
     borderRadius: 22,
     padding: 24,
   },
 
   title: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
   },
 
   price: {
-    color: "#22c55e",
+    color: THEME.COLORS.SUCCESS,
     fontSize: 18,
     textAlign: "center",
     marginTop: 8,
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
   },
 
   sub: {
-    color: "#888",
+    color: THEME.COLORS.TEXT_MUTED,
     fontSize: 12,
     textAlign: "center",
     marginTop: 4,
@@ -108,13 +109,13 @@ const styles = StyleSheet.create({
   },
 
   feature: {
-    color: "#ccc",
+    color: THEME.COLORS.TEXT_SECONDARY,
     marginBottom: 12,
     fontSize: 15,
   },
 
   button: {
-    backgroundColor: "#22c55e",
+    backgroundColor: THEME.COLORS.SUCCESS,
     padding: 16,
     borderRadius: 14,
     marginTop: 24,
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   },
 
   restore: {
-    color: "#25D366",
+    color: THEME.COLORS.SUCCESS,
     textAlign: "center",
     marginTop: 16,
     fontSize: 13,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
 
   badge: {
     alignSelf: "center",
-    backgroundColor: "#22c55e",
+    backgroundColor: THEME.COLORS.SUCCESS,
     color: "#000",
     fontSize: 10,
     fontWeight: "bold",

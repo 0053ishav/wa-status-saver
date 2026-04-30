@@ -1,3 +1,5 @@
+import { ENV } from "@/config/env";
+import { THEME } from "@/config/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Dimensions, View } from "react-native";
@@ -8,9 +10,7 @@ import {
 } from "react-native-google-mobile-ads";
 
 export default function TabsLayout() {
-  const adUnitId = __DEV__
-    ? TestIds.BANNER
-    : "ca-app-pub-9105764742528026/2325362733";
+  const adUnitId = __DEV__ ? TestIds.BANNER : ENV.ADS.BANNER_ID;
 
   const { width } = Dimensions.get("window");
 
@@ -23,7 +23,7 @@ export default function TabsLayout() {
             backgroundColor: "#000",
             borderTopColor: "#111",
           },
-          tabBarActiveTintColor: "#25D366",
+          tabBarActiveTintColor: THEME.COLORS.PRIMARY,
           tabBarInactiveTintColor: "#888",
         }}
       >

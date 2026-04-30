@@ -1,4 +1,5 @@
 import UpgradeModal from "@/components/UpgradeModal";
+import { THEME } from "@/config/theme";
 import { isProUser } from "@/utils/pro";
 import { purchasePro, restorePurchases } from "@/utils/purchase";
 import { getSettings, setAutoSave, setNotification } from "@/utils/settings";
@@ -88,7 +89,11 @@ export default function SettingsScreen() {
       {/* 🔝 HEADER */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#fff" />
+          <Ionicons
+            name="arrow-back"
+            size={22}
+            color={THEME.COLORS.TEXT_PRIMARY}
+          />
         </Pressable>
 
         <Text style={styles.headerTitle}>Settings</Text>
@@ -110,7 +115,11 @@ export default function SettingsScreen() {
               style={styles.quickBtn}
               onPress={() => router.push("/downloads")}
             >
-              <Ionicons name="download-outline" size={18} color="#fff" />
+              <Ionicons
+                name="download-outline"
+                size={18}
+                color={THEME.COLORS.TEXT_PRIMARY}
+              />
               <Text style={styles.quickText}>Downloads</Text>
             </Pressable>
 
@@ -119,7 +128,11 @@ export default function SettingsScreen() {
               style={styles.quickBtn}
               onPress={() => router.push("/recycle-bin")}
             >
-              <Ionicons name="trash-outline" size={18} color="#fff" />
+              <Ionicons
+                name="trash-outline"
+                size={18}
+                color={THEME.COLORS.TEXT_PRIMARY}
+              />
               <Text style={styles.quickText}>Recycle</Text>
             </Pressable>
           </View>
@@ -132,15 +145,21 @@ export default function SettingsScreen() {
                 marginVertical: 18,
                 padding: 12,
                 borderRadius: 10,
-                backgroundColor: "#111",
+                backgroundColor: THEME.COLORS.BORDER,
                 borderWidth: 1,
-                borderColor: "#22c55e",
+                borderColor: THEME.COLORS.SUCCESS,
               }}
             >
-              <Text style={{ color: "#22c55e", fontSize: 13 }}>
+              <Text style={{ color: THEME.COLORS.SUCCESS, fontSize: 13 }}>
                 🔒 Unlock Auto Save & Alerts
               </Text>
-              <Text style={{ color: "#666", fontSize: 11, marginTop: 4 }}>
+              <Text
+                style={{
+                  color: THEME.COLORS.TEXT_MUTED,
+                  fontSize: 11,
+                  marginTop: 4,
+                }}
+              >
                 Save time automatically
               </Text>
             </Pressable>
@@ -158,7 +177,13 @@ export default function SettingsScreen() {
               {isPro ? "Pro Activated ✅" : "Upgrade to Pro"}
             </Text>
           </Pressable>
-          <Text style={{ color: "#666", marginTop: 12, fontSize: 12 }}>
+          <Text
+            style={{
+              color: THEME.COLORS.TEXT_MUTED,
+              marginTop: 12,
+              fontSize: 12,
+            }}
+          >
             💡 {tips[tipIndex]}
           </Text>
         </View>
@@ -210,7 +235,7 @@ export default function SettingsScreen() {
             thumbColor={!isPro ? "#555" : undefined}
             trackColor={{
               false: "#333",
-              true: isPro ? "#25D366" : "#333", // 🔥 key
+              true: isPro ? THEME.COLORS.PRIMARY : "#333", // 🔥 key
             }}
             onValueChange={(v) => {
               setAutoSaveState(v);
@@ -230,11 +255,15 @@ export default function SettingsScreen() {
             }}
             style={{
               padding: 8,
-              backgroundColor: "#111",
+              backgroundColor: THEME.COLORS.BORDER,
               borderRadius: 8,
             }}
           >
-            <Ionicons name="trash-outline" size={20} color="#fff" />
+            <Ionicons
+              name="trash-outline"
+              size={20}
+              color={THEME.COLORS.TEXT_PRIMARY}
+            />
           </TouchableOpacity>
         </View>
         {/* 📈 GROWTH */}
@@ -312,7 +341,7 @@ export default function SettingsScreen() {
 const ProBadge = () => (
   <View
     style={{
-      backgroundColor: "#22c55e",
+      backgroundColor: THEME.COLORS.SUCCESS,
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: 4,
@@ -326,7 +355,7 @@ const ProBadge = () => (
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#0f0f0f",
+    backgroundColor: THEME.COLORS.BACKGROUND,
   },
 
   container: {
@@ -340,11 +369,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: "#111",
+    borderColor: THEME.COLORS.BORDER,
   },
 
   headerTitle: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -360,51 +389,51 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#1a1a1a",
+    backgroundColor: THEME.COLORS.SURFACE,
     padding: 14,
     borderRadius: 10,
     marginBottom: 10,
   },
 
   label: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     fontSize: 16,
   },
 
   item: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: THEME.COLORS.SURFACE,
     padding: 14,
     borderRadius: 10,
     marginBottom: 10,
   },
 
   itemText: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     fontSize: 16,
   },
 
   card: {
-    backgroundColor: "#1f2937",
+    backgroundColor: THEME.COLORS.CARD,
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
   },
 
   cardTitle: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     fontSize: 18,
     fontWeight: "bold",
   },
 
   cardDesc: {
-    color: "#ccc",
+    color: THEME.COLORS.TEXT_SECONDARY,
     marginTop: 4,
     marginBottom: 12,
   },
 
   quickBtn: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: THEME.COLORS.SURFACE,
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
@@ -412,7 +441,7 @@ const styles = StyleSheet.create({
   },
 
   quickText: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     fontSize: 12,
     marginTop: 6,
   },
@@ -422,13 +451,13 @@ const styles = StyleSheet.create({
   },
 
   feature: {
-    color: "#ccc",
+    color: THEME.COLORS.TEXT_SECONDARY,
     marginBottom: 12,
     fontSize: 15,
   },
 
   proButton: {
-    backgroundColor: "#22c55e",
+    backgroundColor: THEME.COLORS.SUCCESS,
     padding: 12,
     borderRadius: 8,
     alignItems: "center",

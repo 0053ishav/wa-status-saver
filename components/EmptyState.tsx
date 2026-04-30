@@ -1,3 +1,4 @@
+import { THEME } from "@/config/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 
@@ -17,7 +18,7 @@ export default function EmptyState({ type }: { type: "image" | "video" }) {
       {/* Icon */}
       <View
         style={{
-          backgroundColor: "#111",
+          backgroundColor: THEME.COLORS.BORDER,
           padding: 20,
           borderRadius: 50,
           marginBottom: 20,
@@ -26,14 +27,14 @@ export default function EmptyState({ type }: { type: "image" | "video" }) {
         <Ionicons
           name={isImage ? "image-outline" : "videocam-outline"}
           size={40}
-          color="#25D366"
+          color={THEME.COLORS.PRIMARY}
         />
       </View>
 
       {/* Title */}
       <Text
         style={{
-          color: "#fff",
+          color: THEME.COLORS.TEXT_PRIMARY,
           fontSize: 18,
           fontWeight: "600",
           textAlign: "center",
@@ -46,7 +47,7 @@ export default function EmptyState({ type }: { type: "image" | "video" }) {
       {/* Subtitle */}
       <Text
         style={{
-          color: "#888",
+          color: THEME.COLORS.TEXT_MUTED,
           textAlign: "center",
           fontSize: 14,
           marginBottom: 20,
@@ -58,19 +59,31 @@ export default function EmptyState({ type }: { type: "image" | "video" }) {
       {/* Steps */}
       <View
         style={{
-          backgroundColor: "#111",
+          backgroundColor: THEME.COLORS.BORDER,
           padding: 16,
           borderRadius: 12,
           width: "100%",
         }}
       >
-        <Text style={{ color: "#ccc", fontSize: 14, marginBottom: 6 }}>
+        <Text
+          style={{
+            color: THEME.COLORS.TEXT_SECONDARY,
+            fontSize: 14,
+            marginBottom: 6,
+          }}
+        >
           1. Open WhatsApp
         </Text>
-        <Text style={{ color: "#ccc", fontSize: 14, marginBottom: 6 }}>
+        <Text
+          style={{
+            color: THEME.COLORS.TEXT_SECONDARY,
+            fontSize: 14,
+            marginBottom: 6,
+          }}
+        >
           2. Watch Status till end
         </Text>
-        <Text style={{ color: "#ccc", fontSize: 14 }}>
+        <Text style={{ color: THEME.COLORS.TEXT_SECONDARY, fontSize: 14 }}>
           3. Come back here to save
         </Text>
       </View>

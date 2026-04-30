@@ -1,5 +1,6 @@
 import SaveFeedbackModal from "@/components/SaveFeedbackModal";
 import UpgradeModal from "@/components/UpgradeModal";
+import { THEME } from "@/config/theme";
 import { getMediaList } from "@/stores/mediaStore";
 import { tryShowInterstitial } from "@/utils/ads";
 import { saveToGallery } from "@/utils/media";
@@ -66,7 +67,7 @@ export default function Preview() {
           backgroundColor: "#000",
         }}
       >
-        <Text style={{ color: "#fff" }}>No media found</Text>
+        <Text style={{ color: THEME.COLORS.TEXT_PRIMARY }}>No media found</Text>
       </View>
     );
   }
@@ -156,14 +157,24 @@ export default function Preview() {
           paddingHorizontal: 16,
           paddingVertical: 12,
           borderBottomWidth: 1,
-          borderColor: "#111",
+          borderColor: THEME.COLORS.BORDER,
         }}
       >
         <Pressable onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#fff" />
+          <Ionicons
+            name="arrow-back"
+            size={22}
+            color={THEME.COLORS.TEXT_PRIMARY}
+          />
         </Pressable>
 
-        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+        <Text
+          style={{
+            color: THEME.COLORS.TEXT_PRIMARY,
+            fontSize: 16,
+            fontWeight: "600",
+          }}
+        >
           Preview
         </Text>
 
@@ -199,6 +210,10 @@ export default function Preview() {
         data={data}
         horizontal
         pagingEnabled
+        initialScrollIndex={initialIndex}
+        initialNumToRender={1}
+        windowSize={3}
+        removeClippedSubviews
         onScrollToIndexFailed={() => {
           setTimeout(() => {
             flatListRef.current?.scrollToIndex({
@@ -263,7 +278,11 @@ export default function Preview() {
             elevation: 4,
           }}
         >
-          <Ionicons name="share-social" size={22} color="#fff" />
+          <Ionicons
+            name="share-social"
+            size={22}
+            color={THEME.COLORS.TEXT_PRIMARY}
+          />
         </TouchableOpacity>
 
         {/* SAVE */}
@@ -273,7 +292,7 @@ export default function Preview() {
             width: 60,
             height: 60,
             borderRadius: 30,
-            backgroundColor: "#25D366",
+            backgroundColor: THEME.COLORS.PRIMARY,
             justifyContent: "center",
             alignItems: "center",
             elevation: 6,

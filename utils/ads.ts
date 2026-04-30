@@ -1,3 +1,4 @@
+import { ENV } from "@/config/env";
 import {
     AdEventType,
     InterstitialAd,
@@ -7,7 +8,7 @@ import { isProUser } from "./pro";
 
 const adUnitId = __DEV__
     ? TestIds.INTERSTITIAL
-    : "ca-app-pub-9105764742528026/9210020652";
+    : ENV.ADS.INTERSTITIAL_ID;
 
 let interstitial: InterstitialAd | null = null;
 let isLoaded = false;
@@ -26,7 +27,7 @@ export function loadInterstitial() {
     unsubscribeLoaded = interstitial.addAdEventListener(
         AdEventType.LOADED,
         () => {
-              console.log("✅ Interstitial Loaded");
+            console.log("✅ Interstitial Loaded");
 
             isLoaded = true;
         }
@@ -35,7 +36,7 @@ export function loadInterstitial() {
     unsubscribeClosed = interstitial.addAdEventListener(
         AdEventType.CLOSED,
         (error) => {
-              console.log("❌ Interstitial Error", error);
+            console.log("❌ Interstitial Error", error);
 
             isLoaded = false;
             loadInterstitial(); // preload next
@@ -54,12 +55,12 @@ export function loadInterstitial() {
 }
 
 export function showInterstitial() {
-      console.log("Trying to show ad", isLoaded);
+    console.log("Trying to show ad", isLoaded);
 
     if (isLoaded && interstitial) {
         interstitial.show();
     } else {
-            console.log("❌ Ad not ready");
+        console.log("❌ Ad not ready");
 
     }
 }
@@ -71,7 +72,7 @@ export async function tryShowInterstitial() {
     if (pro) return;
     actionCount++;
 
-    if (actionCount >= 3) {
+    if (actionCount >= ENV.ADS.FREQUENCY) {
         actionCount = 0;
         showInterstitial();
     }

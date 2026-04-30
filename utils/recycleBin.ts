@@ -1,3 +1,4 @@
+import { ENV } from "@/config/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system/legacy";
 import * as MediaLibrary from "expo-media-library";
@@ -68,7 +69,7 @@ export async function restoreFromRecycle(item: any) {
         const hasPermission = await ensureMediaPermission();
         if (!hasPermission) return false;
 
-        const albumName = "WA Status Saver";
+        const albumName = ENV.APP_NAME;
         let album = await MediaLibrary.getAlbumAsync(albumName);
 
         // 🔥 Create asset from backup (always works)

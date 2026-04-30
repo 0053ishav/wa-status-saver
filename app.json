@@ -17,7 +17,8 @@
         "READ_MEDIA_IMAGES",
         "READ_MEDIA_VIDEO",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "com.google.android.gms.permission.AD_ID"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -32,12 +33,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-9105764742528026~7199994475"
-        }
-      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -51,7 +46,14 @@
           }
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-9105764742528026~7199994475",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -62,6 +64,7 @@
       "eas": {
         "projectId": "837cfa35-3f2d-42a8-9d06-674524217c72"
       }
-    }
+    },
+    "owner": "0007ishav"
   }
 }

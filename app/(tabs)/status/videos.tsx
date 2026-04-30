@@ -2,6 +2,7 @@ import EmptyState from "@/components/EmptyState";
 import SaveFeedbackModal from "@/components/SaveFeedbackModal";
 import StatusMediaGrid from "@/components/StatusMediaGrid";
 import UpgradeModal from "@/components/UpgradeModal";
+import { THEME } from "@/config/theme";
 import { MediaItem } from "@/stores/mediaStore";
 import { tryShowInterstitial } from "@/utils/ads";
 import { autoSaveStatuses } from "@/utils/autoSave";
@@ -212,7 +213,7 @@ export default function VideosScreen() {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "#111",
+            backgroundColor: THEME.COLORS.BORDER,
             borderBottomWidth: 1,
             borderColor: "#222",
           }}
@@ -220,7 +221,7 @@ export default function VideosScreen() {
           {/* 🔥 Animated Counter */}
           <Animated.Text
             style={{
-              color: "#fff",
+              color: THEME.COLORS.TEXT_PRIMARY,
               fontWeight: "600",
               transform: [{ scale: scaleAnim }],
             }}
@@ -235,17 +236,29 @@ export default function VideosScreen() {
           <View style={{ flexDirection: "row", gap: 20 }}>
             {/* SELECT ALL */}
             <TouchableOpacity onPress={handleSelectAll}>
-              <Ionicons name="checkbox-outline" size={20} color="#fff" />
+              <Ionicons
+                name="checkbox-outline"
+                size={20}
+                color={THEME.COLORS.TEXT_PRIMARY}
+              />
             </TouchableOpacity>
 
             {/* SHARE */}
             <TouchableOpacity onPress={handleShareSelected}>
-              <Ionicons name="share-social" size={20} color="#fff" />
+              <Ionicons
+                name="share-social"
+                size={20}
+                color={THEME.COLORS.TEXT_PRIMARY}
+              />
             </TouchableOpacity>
 
             {/* SAVE */}
             <TouchableOpacity onPress={handleBulkSave}>
-              <Ionicons name="download" size={20} color="#25D366" />
+              <Ionicons
+                name="download"
+                size={20}
+                color={THEME.COLORS.PRIMARY}
+              />
             </TouchableOpacity>
 
             {/* CANCEL */}
@@ -255,7 +268,11 @@ export default function VideosScreen() {
                 setSelectionMode(false);
               }}
             >
-              <Ionicons name="close" size={22} color="#fff" />
+              <Ionicons
+                name="close"
+                size={22}
+                color={THEME.COLORS.TEXT_PRIMARY}
+              />
             </TouchableOpacity>
           </View>
         </View>

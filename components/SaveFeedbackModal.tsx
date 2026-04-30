@@ -1,4 +1,13 @@
-import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
+import { THEME } from "@/config/theme";
+import { useEffect, useRef } from "react";
+import {
+  ActivityIndicator,
+  Animated,
+  Modal,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
@@ -6,31 +15,68 @@ type Props = {
 };
 
 export default function SaveFeedbackModal({ visible, state }: Props) {
+  const scale = useRef(new Animated.Value(0.8)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.spring(scale, {
+          toValue: 1,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      scale.setValue(0.8);
+      opacity.setValue(0);
+    }
+  }, [visible]);
+
+  const getContent = () => {
+    switch (state) {
+      case "loading":
+        return (
+          <>
+            <ActivityIndicator size="large" color={THEME.COLORS.PRIMARY} />
+            <Text style={styles.text}>Saving...</Text>
+          </>
+        );
+      case "success":
+        return (
+          <>
+            <Text style={[styles.icon, { color: "#22c55e" }]}>✔</Text>
+            <Text style={styles.text}>Saved</Text>
+          </>
+        );
+      case "error":
+        return (
+          <>
+            <Text style={[styles.icon, { color: "#ef4444" }]}>✕</Text>
+            <Text style={styles.text}>Failed</Text>
+          </>
+        );
+    }
+  };
+
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="none">
       <View style={styles.overlay}>
-        <View style={styles.container}>
-          {state === "loading" && (
-            <>
-              <ActivityIndicator size="large" color="#25D366" />
-              <Text style={styles.text}>Saving...</Text>
-            </>
-          )}
-
-          {state === "success" && (
-            <>
-              <Text style={styles.icon}>✅</Text>
-              <Text style={styles.text}>Saved successfully</Text>
-            </>
-          )}
-
-          {state === "error" && (
-            <>
-              <Text style={styles.icon}>❌</Text>
-              <Text style={styles.text}>Failed to save</Text>
-            </>
-          )}
-        </View>
+        <Animated.View
+          style={[
+            styles.container,
+            {
+              transform: [{ scale }],
+              opacity,
+            },
+          ]}
+        >
+          {getContent()}
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -39,24 +85,28 @@ export default function SaveFeedbackModal({ visible, state }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.65)",
     justifyContent: "center",
     alignItems: "center",
   },
   container: {
-    backgroundColor: "#111",
-    padding: 24,
-    borderRadius: 16,
+    backgroundColor: "#121212",
+    paddingVertical: 26,
+    paddingHorizontal: 28,
+    borderRadius: 20,
     alignItems: "center",
-    minWidth: 160,
+    minWidth: 170,
+    elevation: 8,
   },
   text: {
-    color: "#fff",
+    color: THEME.COLORS.TEXT_PRIMARY,
     marginTop: 12,
     fontSize: 14,
+    fontWeight: "500",
     textAlign: "center",
   },
   icon: {
-    fontSize: 32,
+    fontSize: 34,
+    fontWeight: "bold",
   },
 });

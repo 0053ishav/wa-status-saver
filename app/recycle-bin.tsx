@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import UpgradeModal from "@/components/UpgradeModal";
+import { THEME } from "@/config/theme";
 import { MediaItem } from "@/stores/mediaStore";
 import { deleteForever } from "@/utils/media";
 import { isProUser } from "@/utils/pro";
@@ -110,7 +111,7 @@ export default function RecycleBinScreen() {
             ⏳ {daysLeft}d left
           </Text>
 
-          <Text style={{ color: "#888", fontSize: 10 }}>
+          <Text style={{ color: THEME.COLORS.TEXT_MUTED, fontSize: 10 }}>
             Will be deleted permanently
           </Text>
         </View>
@@ -132,7 +133,7 @@ export default function RecycleBinScreen() {
               handleRestore(item);
             }}
             style={{
-              backgroundColor: "#25D366",
+              backgroundColor: THEME.COLORS.PRIMARY,
               padding: 6,
               borderRadius: 6,
             }}
@@ -152,7 +153,11 @@ export default function RecycleBinScreen() {
               borderRadius: 6,
             }}
           >
-            <Ionicons name="trash" size={14} color="#fff" />
+            <Ionicons
+              name="trash"
+              size={14}
+              color={THEME.COLORS.TEXT_PRIMARY}
+            />
           </TouchableOpacity>
         </View>
         {!isPro && (
@@ -186,7 +191,9 @@ export default function RecycleBinScreen() {
           borderColor: "#111",
         }}
       >
-        <Text style={{ color: "#fff", fontSize: 16 }}>Recently Deleted</Text>
+        <Text style={{ color: THEME.COLORS.TEXT_PRIMARY, fontSize: 16 }}>
+          Recently Deleted
+        </Text>
         <Text style={{ color: "#666", fontSize: 12 }}>
           Items auto-delete in 7 days • Restore anytime
         </Text>
@@ -226,7 +233,13 @@ export default function RecycleBinScreen() {
               }}
             >
               {/* 🔥 TITLE */}
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
+              <Text
+                style={{
+                  color: THEME.COLORS.TEXT_PRIMARY,
+                  fontSize: 18,
+                  fontWeight: "600",
+                }}
+              >
                 Delete Forever?
               </Text>
 
@@ -263,7 +276,9 @@ export default function RecycleBinScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#fff" }}>Cancel</Text>
+                  <Text style={{ color: THEME.COLORS.TEXT_PRIMARY }}>
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
 
                 {/* DELETE */}
@@ -284,7 +299,12 @@ export default function RecycleBinScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  <Text
+                    style={{
+                      color: THEME.COLORS.TEXT_PRIMARY,
+                      fontWeight: "600",
+                    }}
+                  >
                     Delete
                   </Text>
                 </TouchableOpacity>

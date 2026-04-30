@@ -29,6 +29,7 @@
 //   }
 // }
 
+import { ENV } from "@/config/env";
 import { MediaItem } from "@/stores/mediaStore";
 import * as FileSystem from "expo-file-system/legacy";
 import * as MediaLibrary from "expo-media-library";
@@ -50,7 +51,8 @@ export async function saveToGallery(uri: string, type: "image" | "video") {
             to: destPath,
         });
 
-        const albumName = "WA Status Saver";
+  
+        const albumName = ENV.APP_NAME;
 
         let album = await MediaLibrary.getAlbumAsync(albumName);
 
@@ -75,7 +77,7 @@ export async function saveToGallery(uri: string, type: "image" | "video") {
 
 export async function deleteFromGallery(item: MediaItem) {
     try {
-        const album = await MediaLibrary.getAlbumAsync("WA Status Saver");
+        const album = await MediaLibrary.getAlbumAsync(ENV.APP_NAME);
 
         const fileName = item.uri.split("/").pop() || `backup_${Date.now()}`;
         const backupPath = FileSystem.documentDirectory + fileName;

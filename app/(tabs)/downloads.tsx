@@ -1,5 +1,7 @@
 import MediaGrid from "@/components/MediaGrid";
 import UpgradeModal from "@/components/UpgradeModal";
+import { ENV } from "@/config/env";
+import { THEME } from "@/config/theme";
 import { MediaItem } from "@/stores/mediaStore";
 import { ensureMediaPermission } from "@/utils/permission";
 import { isProUser } from "@/utils/pro";
@@ -20,7 +22,8 @@ export default function DownloadsScreen() {
   const [isPro, setIsPro] = useState(false);
 
   const loadMedia = async () => {
-    const album = await MediaLibrary.getAlbumAsync("WA Status Saver");
+    const name = ENV.APP_NAME;
+    const album = await MediaLibrary.getAlbumAsync(name);
 
     if (!album) {
       setData([]);
@@ -75,22 +78,24 @@ export default function DownloadsScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: THEME.COLORS.BACKGROUND }}>
       {/* Top Location Bar */}
       <View
         style={{
           padding: 12,
           borderBottomWidth: 1,
-          borderColor: "#111",
+          borderColor: THEME.COLORS.BORDER,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
         <View>
-          <Text style={{ color: "#888", fontSize: 12 }}>Saving to:</Text>
-          <Text style={{ color: "#25D366", fontSize: 13 }}>
-            WA Status Saver Album
+          <Text style={{ color: THEME.COLORS.TEXT_MUTED, fontSize: 12 }}>
+            Saving to:
+          </Text>
+          <Text style={{ color: THEME.COLORS.PRIMARY, fontSize: 13 }}>
+            {ENV.APP_NAME} Album
           </Text>
         </View>
         <TouchableOpacity
@@ -99,11 +104,15 @@ export default function DownloadsScreen() {
           }}
           style={{
             padding: 8,
-            backgroundColor: "#111",
+            backgroundColor: THEME.COLORS.BORDER,
             borderRadius: 8,
           }}
         >
-          <Ionicons name="trash-outline" size={20} color="#fff" />
+          <Ionicons
+            name="trash-outline"
+            size={20}
+            color={THEME.COLORS.TEXT_PRIMARY}
+          />
         </TouchableOpacity>
       </View>
 
@@ -112,7 +121,7 @@ export default function DownloadsScreen() {
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text style={{ color: "#aaa" }}>
+          <Text style={{ color: THEME.COLORS.TEXT_SECONDARY }}>
             Permission required to show downloads
           </Text>
         </View>
@@ -120,7 +129,9 @@ export default function DownloadsScreen() {
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text style={{ color: "#666" }}>No downloads yet</Text>
+          <Text style={{ color: THEME.COLORS.TEXT_MUTED }}>
+            No downloads yet
+          </Text>
         </View>
       ) : (
         <MediaGrid
